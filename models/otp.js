@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import sendMail from "../utils/mailSender";
 
 const otpSchema = mongoose.Schema({
     email: {
@@ -16,4 +17,11 @@ const otpSchema = mongoose.Schema({
     }
 });
 
+otpSchema.post("save",async function(doc){
+    try{
+        await sendMail(email,"Verification Email from Edtech_backend",doc.otp)
+    }catch(err){
+        console.error("Error inside emailing otp :"+err)
+    }
+})
 export default mongoose.model("Otp", otpSchema);
