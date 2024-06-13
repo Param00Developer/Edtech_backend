@@ -19,7 +19,7 @@ async function auth(req,res,next){
     }
     catch(err){
         console.log(`Error at auth middleware :${err}`)
-        return res.status(401).json({
+        return res.status(500).json({
             success:false,
             message:`Error at auth middleware :${err}`
         })
@@ -39,7 +39,7 @@ async function isStudent(req,res,next){
     }
     catch(err){
         console.log(`Error at isStudent middleware :${err}`)
-        return res.status(401).json({
+        return res.status(500).json({
             success:false,
             message:`Error at isStudent middleware :${err}`
         })
@@ -59,7 +59,7 @@ async function isInstructor(req,res,next){
     }
     catch(err){
         console.log(`Error at isInstructor middleware :${err}`)
-        return res.status(401).json({
+        return res.status(500).json({
             success:false,
             message:`Error at isInstructor middleware :${err}`
         })
@@ -79,7 +79,7 @@ async function isAdmin(req,res,next){
     }
     catch(err){
         console.log(`Error at isAdmin middleware :${err}`)
-        return res.status(401).json({
+        return res.status(500).json({
             success:false,
             message:`Error at isAdmin middleware :${err}`
         })
