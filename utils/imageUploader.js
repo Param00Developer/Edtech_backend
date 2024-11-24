@@ -13,7 +13,7 @@ async function uploadImage(file, folder, height_image, quality_image) {
   try {
     const height = height_image ? height_image : null;
     const quality = quality_image ? quality_image : null;
-    const options = { height, quality, resource_type: "auto" };
+    const options = { height, quality, resource_type: "auto",folder};
     //image upload
     console.log("-------", file);
     const result = await cloudinary.v2.uploader.upload(
