@@ -44,3 +44,68 @@ export async function createSubSection(req, res) {
     });
   }
 }
+
+export async function updateSubSection(req, res) {
+  try {
+    const { sectionId, title, description } = req.body;
+    const subSection = await SubSection.findById(sectionId);
+
+    if (!subSection) {
+      return res.status(404).json({
+        success: false,
+        message: "SubSection not found",
+      });
+    }
+
+    title ? (subSection.title = title) : null;
+    description ? (subSection.description = description) : null;
+    const video = req.files?.video;
+
+    if (video) {
+      const videoUrl = await uploadImage(video, process.env.FOLDER);
+      subSection.videoUrl = videoUrl;
+      subSection.timeDuration = `${videoUrl.duration}`;
+    }
+    await subSection.save();
+    return res.json({
+      success: true,
+      message: "Section updated successfully",
+    });
+  } catch (err) {
+    console.log(`Error inside subsection update :${err}`);
+    return res.status(500).json({
+      success: false,
+      message: "Error while updating Subsection : Internal Servre error.",
+    });
+  }
+}
+
+export async function deleteSubSection(req, res) {
+  try {
+    const { sectionId, subSectionId } = req.body;
+
+    //deleting Subsection from section
+    await Section.findByIdUpdate(sectionId, {
+      $pull: { subSection: subSectionId },
+    });
+    const subSection = await SubSection.findByIdDelete({
+      _id: subSectionId,
+    });
+    if (!subSection) {
+      return res.status(404).json({
+        success: false,
+        message: "Subsection not found",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Subsection deleted successfully",
+    });
+  } catch (err) {
+    console.log(`Error inside subsection delete :${err}`);
+    return res.status(400).json({
+      success: false,
+      message: "Error while deleting Subsection : Internal Servre error.",
+    });
+  }
+}

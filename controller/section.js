@@ -1,4 +1,4 @@
-import Course from "../models/course.js";
+import Course from "../models/courseModel.js";
 import Section from "../models/section.js";
 
 export async function createSection(req, res) {

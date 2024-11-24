@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 import Course from "../models/courseModel.js";
-import { instance } from "../config/razorpay.js";
+// import instance from "../config/razorpay.js";
 import User from "../models/user.js";
-import user from "../models/user.js";
 import sendMail from "../utils/mailSender.js";
 
 export async function capturePayment(req, res) {

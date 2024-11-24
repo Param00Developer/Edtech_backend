@@ -19,29 +19,39 @@ const courseModelSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Section",
   },
-  ratingAndReviews: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "RatingAndReview",
-  },
+  ratingAndReviews: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RatingAndReview",
+    },
+  ],
   price: {
     type: Number,
   },
   thumbnail: {
     type: String,
   },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Tag",
-  },
   tags: {
-    type: string,
+    type: [String],
+    required: true,
   },
+  category: {
+		type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+	},
   studentEnrolled: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
   ],
+  instructions: {
+    type: [String],
+  },
+  status: {
+    type: String,
+    enum: ["Draft", "Published"],
+  },
 });
 
-export default mongoose.Schema("Course", courseModelSchema);
+export default mongoose.model("Course", courseModelSchema);
