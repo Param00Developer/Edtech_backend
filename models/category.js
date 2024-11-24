@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 const categorySchema = mongoose.Schema({
   name: {
@@ -8,10 +8,12 @@ const categorySchema = mongoose.Schema({
   description: {
     type: String,
   },
-  course: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Course",
-  },
+  course: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    },
+  ],
 });
 
-export default mongoose.Schema("Category", categorySchema);
+export default mongoose.model("Category", categorySchema);
