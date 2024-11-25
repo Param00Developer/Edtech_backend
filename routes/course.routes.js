@@ -1,24 +1,18 @@
 import express from "express";
 import CourseController from "../controller/course.controller.js";
+import SectionController from "../controller/section.controller.js";
+import SubSectionController from "../controller/subSection.js";
 const router = express.Router();
 
-const courseController = new CourseController();
+const courseController = CourseController.createInstance();
+const sectionController =SectionController.createInstance();
+const subSectionController =SubSectionController.createInstance();
 import {
   createCategory,
   showAllCategory,
   categoryPageDetails,
 } from "../controller/category.js";
-import {
-  createSection,
-  updateSection,
-  deleteSection,
-} from "../controller/section.js";
 
-import {
-  createSubSection,
-  updateSubSection,
-  deleteSubSection,
-} from "../controller/subSection.js";
 import {
   createRating,
   getAllRatings,
@@ -32,17 +26,17 @@ import { auth, isInstructor, isStudent, isAdmin } from "../middleware/auth.js";
 //courses can only be created by instructor
 router.post("/createCourse", auth, isInstructor, courseController.createCourse);
 // Add a section to a course
-router.post("/addSection", auth, isInstructor, courseController.createSection);
+router.post("/addSection", auth, isInstructor, sectionController.createSection);
 //update a section
-router.post("/updateSection", auth, isInstructor, courseController.updateSection);
+router.post("/updateSection", auth, isInstructor, sectionController.updateSection);
 //delete a section
-router.post("/deleteSection", auth, isInstructor, courseController.deleteSection);
+router.post("/deleteSection", auth, isInstructor, sectionController.deleteSection);
 // Add a subSection to a section
-router.post("/addSubSection", auth, isInstructor, courseController.createSubSection);
+router.post("/addSubSection", auth, isInstructor, subSectionController.createSubSection);
 // Edit Sub Section
-router.post("/updateSubSection", auth, isInstructor, courseController.updateSubSection)
+router.post("/updateSubSection", auth, isInstructor, subSectionController.updateSubSection)
 // Delete Sub Section
-router.post("/deleteSubSection", auth, isInstructor, courseController.deleteSubSection)
+router.post("/deleteSubSection", auth, isInstructor, subSectionController.deleteSubSection)
 // get all registered courses
 router.get("/getAllCourses", courseController.getAllCourses);
 //get course specific details
@@ -51,6 +45,8 @@ router.post("/getCourseDetails", courseController.getCourseDetails);
 router.post("/getFullCourseDetails", auth, courseController.getFullCourseDetails)
 // Edit Course routes
 router.post("/editCourse", auth, isInstructor, courseController.editCourse)
+// Get all Courses Under a Specific Instructor
+router.get("/getInstructorCourses", auth, isInstructor, courseController.getInstructorCourses)
 // Delete a Course
 router.delete("/deleteCourse", courseController.deleteCourse)
 
