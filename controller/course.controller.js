@@ -5,6 +5,7 @@ import Section from "../models/section.js";
 import SubSection from "../models/subSection.js";
 import CourseProgress from "../models/courseProgress.js";
 import { uploadImage } from "../utils/imageUploader.js";
+import { SuccessResponse } from "../utils/response.utils.js";
 
 export default class CourseController {
   constructor() {
@@ -113,11 +114,10 @@ export default class CourseController {
       );
 
       //return response
-      res.status(200).json({
-        success: true,
+      return SuccessResponse(req,res,{
         message: "Course created successfully",
         data: newCourse,
-      });
+      })
     } catch (err) {
       console.log("Error creating User : ", err);
       res.status(500).json({
@@ -155,11 +155,10 @@ export default class CourseController {
           },
         })
         .exec();
-      res.status(200).json({
-        success: true,
+      SuccessResponse(req,res,{
         message: "User details fetched successfully",
         data: courseDetails,
-      });
+      })
     } catch (err) {
       console.log("Error fetching  course : ", err);
       return res.status(500).json({
@@ -192,10 +191,9 @@ export default class CourseController {
         )
         .populate("instructor")
         .exec();
-      return res.status(200).json({
-        success: true,
+      SuccessResponse(req,res,{
         data: allCourses,
-      });
+      })
     } catch (error) {
       console.log(error);
       return res.status(404).json({
@@ -263,8 +261,7 @@ export default class CourseController {
         totalDurationInSeconds
       );
 
-      return res.status(200).json({
-        success: true,
+      SuccessResponse(req,res,{
         data: {
           courseDetails,
           totalDuration,
@@ -272,7 +269,7 @@ export default class CourseController {
             ? courseProgressCount?.completedVideos
             : [],
         },
-      });
+      })
     } catch (error) {
       return res.status(500).json({
         success: false,
@@ -343,11 +340,10 @@ export default class CourseController {
         })
         .exec();
 
-      res.json({
-        success: true,
+      SuccessResponse(req,res,{
         message: "Course updated successfully",
         data: updatedCourse,
-      });
+      })
     } catch (error) {
       console.error(error);
       res.status(500).json({
@@ -379,10 +375,10 @@ export default class CourseController {
         .sort({ createdAt: -1 });
 
       // Return the instructor's courses
-      res.status(200).json({
-        success: true,
+      SuccessResponse(req,res,{
+        message: "Courses retrieved successfully",
         data: instructorCourses,
-      });
+      })
     } catch (error) {
       console.error(error);
       res.status(500).json({
@@ -438,10 +434,9 @@ export default class CourseController {
       // Delete the course
       await this.repoCourse.findByIdAndDelete(courseId);
 
-      return res.status(200).json({
-        success: true,
+      SuccessResponse(req,res,{
         message: "Course deleted successfully",
-      });
+      })
     } catch (error) {
       console.error(error);
       return res.status(500).json({

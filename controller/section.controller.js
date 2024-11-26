@@ -1,6 +1,7 @@
 import Course from "../models/courseModel.js";
 import Section from "../models/section.js";
 import SubSection from "../models/subSection.js";
+import { SuccessResponse } from "../utils/response.utils.js";
 
 export default class SectionController {
   constructor() {
@@ -48,11 +49,10 @@ export default class SectionController {
         })
         .exec();
 
-      return res.status(200).json({
-        success: true,
+      SuccessResponse(req,res,{
         message: "Section created successfully.",
         updatedCourse,
-      });
+      })
     } catch (err) {
       console.log(`Error inside section Creation :${err}`);
       return res.status(400).json({
@@ -97,11 +97,10 @@ export default class SectionController {
         })
         .exec();
 
-      return res.status(200).json({
-        success: true,
+      SuccessResponse(req,res,{
         message: newSection,
         data: course,
-      });
+      })
     } catch (err) {
       console.log(`Error inside section update :${err}`);
       return res.status(500).json({
@@ -151,10 +150,10 @@ export default class SectionController {
           },
         })
         .exec();
-      res.status(200).json({
-        success: true,
+
+      SuccessResponse(req,res,{
         message: "Section deleted successfully.",
-      });
+      })
     } catch (err) {
       console.log(`Error inside section delete :${err}`);
       return res.status(500).json({

@@ -1,7 +1,7 @@
 import SubSection from "../models/subSection.js";
 import Section from "../models/section.js";
 import { uploadImage } from "../utils/imageUploader.js";
-
+import { SuccessResponse } from "../utils/response.utils.js";
 export default class SubSectionController {
   constructor() {
     this.repoSection = Section;
@@ -50,8 +50,7 @@ export default class SubSectionController {
         )
         .populate("subSection");
 
-      res.status(200).json({
-        success: true,
+      SuccessResponse(req, res, {
         message: "SubSection created successfully",
         data: section,
       });
@@ -98,8 +97,7 @@ export default class SubSectionController {
         .findById(sectionId)
         .populate("subSection");
 
-      return res.json({
-        success: true,
+      SuccessResponse(req, res, {
         data: updatedSection,
         message: "Section updated successfully",
       });
@@ -140,8 +138,7 @@ export default class SubSectionController {
         "subSection"
       );
 
-      return res.status(200).json({
-        success: true,
+      SuccessResponse(req, res, {
         data: updatedSection,
         message: "Subsection deleted successfully",
       });
