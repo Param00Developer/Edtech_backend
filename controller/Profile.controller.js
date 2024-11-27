@@ -1,6 +1,7 @@
 import Profile from "../models/profile.js";
 import User from "../models/user.js";
 import { uploadImage } from "../utils/imageUploader.js";
+import { SuccessResponse } from "../utils/response.utils.js";
 
 export default class ProfileController {
   constructor() {
@@ -40,10 +41,9 @@ export default class ProfileController {
 
       await profile.save();
 
-      return res.status(200).json({
-        success: false,
+      SuccessResponse(req,res,{
         message: "Profile updated successfully",
-      });
+      })
     } catch (err) {
       console.log(err);
       return res.status(500).json({
@@ -73,10 +73,9 @@ export default class ProfileController {
       await this.repoProfile.findByIdAndDelete(profileId);
       await this.repoUser.findByIdAndDelete(id);
 
-      res.status(200).json({
-        success: true,
+      SuccessResponse(req,res,{
         message: "User delete successful.",
-      });
+      })
     } catch (err) {
       console.log(err);
       return res.status(500).json({
@@ -98,11 +97,10 @@ export default class ProfileController {
 
       const user = await findById(id).populate("additionalDetails").exec();
 
-      res.status(200).json({
-        success: true,
+      SuccessResponse(req,res,{
         message: "user data fetched based on filters",
         user,
-      });
+      })
     } catch (err) {
       console.log(err);
       return res.status(500).json({
@@ -122,7 +120,6 @@ export default class ProfileController {
     try {
       const displayPicture = req.files?.displayPicture;
       const id = req.user?.id;
-      console.log("=====", displayPicture);
       const upload = await uploadImage(
         displayPicture,
         String(process.env.FOLDER_NAME),
@@ -137,11 +134,11 @@ export default class ProfileController {
         },
         { new: true }
       );
-      res.status(200).json({
-        success: true,
+
+      SuccessResponse(req,res,{
         message: "Image update was successful",
         user,
-      });
+      })
     } catch (err) {
       console.log(err);
       return res.status(500).json({
@@ -173,10 +170,10 @@ export default class ProfileController {
           message: `Could not find user with id: ${userDetails}`,
         });
       }
-      return res.status(200).json({
-        success: true,
+
+      SuccessResponse(req,res,{
         data: enrolledCourses.courses,
-      });
+      })
     } catch (error) {
       return res.status(500).json({
         success: false,

@@ -55,7 +55,7 @@ export const passwordUpdated = (email, name) => {
     
     <body>
         <div class="container">
-            <a href="https://studynotion-edtech-project.vercel.app"><img class="logo"
+            <a href=""><img class="logo"
                     src="https://i.ibb.co/7Xyj3PC/logo.png" alt="Ed_Techs"></a>
             <div class="message">Password Update Confirmation</div>
             <div class="body">
@@ -66,7 +66,7 @@ export const passwordUpdated = (email, name) => {
             </div>
             <div class="support">If you have any questions or need further assistance, please feel free to reach out to us
                 at
-                <a href="mailto:info@studynotion.com">info@edTech.com</a>. We are here to help!
+                <a href="mailto:pamail.7908@gmail.com">info@edTech.com</a>. We are here to help!
             </div>
         </div>
     </body>
