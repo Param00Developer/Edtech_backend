@@ -120,7 +120,6 @@ export default class ProfileController {
     try {
       const displayPicture = req.files?.displayPicture;
       const id = req.user?.id;
-      console.log("=====", displayPicture);
       const upload = await uploadImage(
         displayPicture,
         String(process.env.FOLDER_NAME),
