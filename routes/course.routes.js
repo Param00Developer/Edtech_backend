@@ -2,16 +2,15 @@ import express from "express";
 import CourseController from "../controller/course.controller.js";
 import SectionController from "../controller/section.controller.js";
 import SubSectionController from "../controller/subSection.js";
+import CategoryController from "../controller/category.js";
+import RatingAndReviewController from "../controller/ratingAndReview.js";
 const router = express.Router();
 
 const courseController = CourseController.createInstance();
 const sectionController =SectionController.createInstance();
 const subSectionController =SubSectionController.createInstance();
-import {
-  createCategory,
-  showAllCategory,
-  categoryPageDetails,
-} from "../controller/category.js";
+const categoryController = CategoryController.createInstance();
+const ratingAndReviewController = RatingAndReviewController.createInstance();
 
 import {
   createRating,
@@ -54,16 +53,16 @@ router.delete("/deleteCourse", courseController.deleteCourse)
 //                                      Category routes (Only by Admin)
 // ********************************************************************************************************
 //category Routes
-router.post("/createCategory", auth, isAdmin, createCategory);
-router.get("/showAllCategories", showAllCategory);
-router.post("/getCategoryPageDetails", categoryPageDetails);
+router.post("/createCategory", auth, isAdmin, categoryController.createCategory);
+router.get("/showAllCategories", categoryController.showAllCategory);
+router.post("/getCategoryPageDetails", categoryController.categoryPageDetails);
 
 // ********************************************************************************************************
 //                                      Rating and Review
 // ********************************************************************************************************
 //rating and review
-router.post("/createRating", auth, isStudent, createRating);
-router.get("/getAvgRating", getAvgRatings);
-router.get("/getReviews", getAllRatings);
+router.post("/createRating", auth, isStudent, ratingAndReviewController.createRating);
+router.get("/getAvgRating", ratingAndReviewController.getAvgRatings);
+router.get("/getReviews", ratingAndReviewController.getAllRatings);
 
 export default router;

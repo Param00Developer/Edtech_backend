@@ -11,7 +11,7 @@ export default class PasswordController {
   }
 
   static createInstance() {
-    return new ProfileController();
+    return new PasswordController();
   }
 
   /**
