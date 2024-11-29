@@ -1,7 +1,9 @@
+import errorConstants from "../constants/error.constants.js";
 import Profile from "../models/profile.js";
 import User from "../models/user.js";
+import AppError from "../utils/appError.utils.js";
 import { uploadImage } from "../utils/imageUploader.js";
-import { SuccessResponse } from "../utils/response.utils.js";
+import { ErrorResponse, SuccessResponse } from "../utils/response.utils.js";
 
 export default class ProfileController {
   constructor() {
@@ -24,9 +26,9 @@ export default class ProfileController {
       const { dateOfBirth = "", about = "", contactNumber, gender } = req.body;
       const id = req.user?.id;
       if (!contactNumber || !gender || !id) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Please fill all the fields" });
+        throw new AppError(errorConstants.BAD_REQUEST,{
+          message: "Please fill all the fields"
+        })
       }
 
       const user = await this.repoUser.findById(id);
@@ -45,11 +47,7 @@ export default class ProfileController {
         message: "Profile updated successfully",
       })
     } catch (err) {
-      console.log(err);
-      return res.status(500).json({
-        success: false,
-        message: "Profile update failed.",
-      });
+      ErrorResponse(req,res,err)
     }
   };
 
@@ -65,8 +63,7 @@ export default class ProfileController {
       const user = await this.repoUser.findById(id);
       const profileId = user.additionalDetails;
       if (!profileId) {
-        return res.satus(400).json({
-          success: false,
+        throw new AppError(errorConstants.RESOURCE_NOT_FOUND, {
           message: "Profile not found",
         });
       }
@@ -77,11 +74,7 @@ export default class ProfileController {
         message: "User delete successful.",
       })
     } catch (err) {
-      console.log(err);
-      return res.status(500).json({
-        success: false,
-        message: "Profile delete failed.",
-      });
+      ErrorResponse(req,res,err)
     }
   };
 
@@ -102,11 +95,7 @@ export default class ProfileController {
         user,
       })
     } catch (err) {
-      console.log(err);
-      return res.status(500).json({
-        success: false,
-        message: "User data fetch falied.",
-      });
+      ErrorResponse(req,res,err)
     }
   };
 
@@ -140,11 +129,7 @@ export default class ProfileController {
         user,
       })
     } catch (err) {
-      console.log(err);
-      return res.status(500).json({
-        success: false,
-        message: "Failed to update Profile picture",
-      });
+      ErrorResponse(req,res,err)
     }
   };
 
@@ -165,20 +150,16 @@ export default class ProfileController {
         .populate("courses");
 
       if (!enrolledCourses) {
-        return res.status(400).json({
-          success: false,
+        throw new AppError(errorConstants.RESOURCE_NOT_FOUND,{
           message: `Could not find user with id: ${userDetails}`,
-        });
+        })
       }
 
       SuccessResponse(req,res,{
         data: enrolledCourses.courses,
       })
     } catch (error) {
-      return res.status(500).json({
-        success: false,
-        message: error.message,
-      });
+      ErrorResponse(req,res,error)
     }
   };
 }

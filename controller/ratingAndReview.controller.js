@@ -1,7 +1,10 @@
 import mongoose from "mongoose";
 import Course from "../models/courseModel.js";
 import Ratingandreview from "../models/ratingandreview.js";
-import { SuccessResponse } from "../utils/response.utils.js";
+import { ErrorResponse, SuccessResponse } from "../utils/response.utils.js";
+import AppError from "../utils/appError.utils.js";
+import errorConstants from "../constants/error.constants.js";
+
 
 export default class RatingAndReviewController {
   constructor() {
@@ -31,10 +34,9 @@ export default class RatingAndReviewController {
         studentsEnrolled: { $elemMatch: { $eq: userId } },
       });
       if (!isEnrolled) {
-        return res.status(403).json({
-          success: false,
+        throw new AppError(errorConstants.NOT_AUTHORIZED,{
           message: "You are not enrolled in this course",
-        });
+        })
       }
       //checking already reviewed
       const alreadyReviewed = await  this.repoRatingAndReview.findOne({
@@ -42,10 +44,9 @@ export default class RatingAndReviewController {
         course: courseId,
       });
       if (alreadyReviewed) {
-        return res.status(403).json({
-          success: false,
-          message: "Already reviewed course. ",
-        });
+        throw new AppError(errorConstants.BAD_REQUEST,{
+          message: "You have already reviewed this course"
+        })
       }
       //create rating
       const rate = await  this.repoRatingAndReview.create({
@@ -68,10 +69,7 @@ export default class RatingAndReviewController {
       });
     } catch (err) {
       console.log(err);
-      return res.status(500).json({
-        success: false,
-        message: "Internal Server Error",
-      });
+      ErrorResponse(req, res, err);
     }
   };
 
@@ -101,11 +99,7 @@ export default class RatingAndReviewController {
         data: allRatings,
       });
     } catch (err) {
-      console.log(err);
-      return res.status(500).json({
-        success: false,
-        message: "Internal Server Error",
-      });
+      ErrorResponse(req,res,err)
     }
   };
 
@@ -146,11 +140,7 @@ export default class RatingAndReviewController {
         avgRating: 0,
       });
     } catch (err) {
-      console.error(err);
-      return res.status(500).json({
-        success: false,
-        message: "Internal Server Error",
-      });
+      ErrorResponse(req,res,err)
     }
   };
 }

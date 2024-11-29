@@ -18,9 +18,18 @@ const NOT_AUTHORIZED = {
   customErrorCode: 1003,
 };
 
+
+const RESOURCE_NOT_FOUND = {
+  customErrorCode: 1004,
+  message: "Resource not found",
+  httpCode: StatusCodes.NOT_FOUND,
+};
+
+
 const errorConstants = {
   INTERNAL_SERVER_ERROR,
   BAD_REQUEST,
   NOT_AUTHORIZED,
+  RESOURCE_NOT_FOUND
 };
 export default errorConstants;

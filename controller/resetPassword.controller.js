@@ -3,7 +3,9 @@ import jwt from "jsonwebtoken";
 import sendMail from "../utils/mailSender.js";
 import bcrypt from "bcrypt";
 import { passwordUpdated } from "../mailTemplates/passwordChange.js";
-import { SuccessResponse } from "../utils/response.utils.js";
+import { ErrorResponse, SuccessResponse } from "../utils/response.utils.js";
+import AppError from "../utils/appError.utils.js";
+import errorConstants from "../constants/error.constants.js";
 
 export default class PasswordController {
   constructor() {
@@ -25,10 +27,9 @@ export default class PasswordController {
       const { email } = req.body;
       const userFound = await this.repoUser.findOne({ email });
       if (!userFound) {
-        return res.status(400).json({
-          success: false,
+        throw new AppError(errorConstants.BAD_REQUEST,{
           message: `This Email: ${email} is not Registered With Us Enter a Valid Email `,
-        });
+        })
       }
       const payload = {
         email: email,
@@ -42,21 +43,16 @@ export default class PasswordController {
       try {
         await sendMail(email, "Password reset Ed-tech_backend", message);
       } catch (err) {
-        console.log("Error inside email in resetPassword :", err);
-        return res.status(500).json({
-          success: false,
-          message: `Error in mail inside resetPassword :${err}`,
-        });
+        throw new AppError(errorConstants.INTERNAL_SERVER_ERROR, {
+          message: `Error in mail inside resetPassword :${err}`
+        })
       }
       //If mail send is success
       SuccessResponse(req, res, {
         message: `Please check your mail ${email} for resetting password..`,
       });
     } catch (err) {
-      return res.status(500).json({
-        success: false,
-        message: "Error while resetting password : Internal Server Error",
-      });
+      ErrorResponse(req,res,err)
     }
   };
 
@@ -71,16 +67,14 @@ export default class PasswordController {
       const { password, confirmPassword, token } = req.body;
 
       if (!token) {
-        return res.status(400).json({
-          success: false,
+        throw new AppError(errorConstants.BAD_REQUEST, {
           message: "Invalid Url.",
-        });
+        })
       }
       if (password != confirmPassword) {
-        return res.status(400).json({
-          success: false,
+        throw new AppError(errorConstants.BAD_REQUEST, {
           message: "Password and confirm password does not match",
-        });
+        })
       }
       const { email } = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -94,19 +88,15 @@ export default class PasswordController {
         const message = passwordUpdated(email, user.firstName + user.lastName);
         await sendMail(email, "Password reset Ed-tech_backend", message);
       } catch (err) {
-        return res.status(500).json({
-          success: false,
-          message: `Error in mail inside resetPassword :${err}`,
-        });
+        throw new AppError(errorConstants.INTERNAL_SERVER_ERROR, {
+          message: `Error in mail inside resetPassword :${err}`
+        })
       }
       SuccessResponse(req, res, {
         message: `Password changed successfully`,
       });
     } catch (err) {
-      return res.status(500).json({
-        success: false,
-        message: `Error while reseting password :${err}`,
-      });
+      ErrorResponse(req,res,err)
     }
   };
 }

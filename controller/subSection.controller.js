@@ -2,6 +2,8 @@ import SubSection from "../models/subSection.js";
 import Section from "../models/section.js";
 import { uploadImage } from "../utils/imageUploader.js";
 import { SuccessResponse } from "../utils/response.utils.js";
+import AppError from "../utils/appError.utils.js";
+import errorConstants from "../constants/error.constants.js";
 export default class SubSectionController {
   constructor() {
     this.repoSection = Section;
@@ -25,10 +27,9 @@ export default class SubSectionController {
       const { sectionId, title, description } = req.body;
       const video = req.files.videoFile;
       if (!sectionId || !title || !description) {
-        return res.status(400).json({
-          success: false,
+        throw new AppError(errorConstants.BAD_REQUEST,{
           message: "Please fill all the fields",
-        });
+        })
       }
       const uploadDetails = await uploadImage(video, process.env.FOLDER);
 
@@ -55,12 +56,7 @@ export default class SubSectionController {
         data: section,
       });
     } catch (err) {
-      console.log(`Error inside subsection delete :${err}`);
-      return res.status(400).json({
-        success: false,
-        message: "Unable to create subsection",
-        error: err.message,
-      });
+      ErrorResponse(req, res, err);
     }
   };
 
@@ -77,10 +73,9 @@ export default class SubSectionController {
       const subSection = await this.repoSubSection.findById(subSectionId);
 
       if (!subSection) {
-        return res.status(404).json({
-          success: false,
+        throw new AppError(errorConstants.RESOURCE_NOT_FOUND, {
           message: "SubSection not found",
-        });
+        })
       }
 
       title ? (subSection.title = title) : null;
@@ -102,11 +97,7 @@ export default class SubSectionController {
         message: "Section updated successfully",
       });
     } catch (err) {
-      console.log(`Error inside subsection update :${err}`);
-      return res.status(500).json({
-        success: false,
-        message: "Error while updating Subsection : Internal Servre error.",
-      });
+      ErrorResponse(req, res, err);
     }
   };
 
@@ -129,10 +120,9 @@ export default class SubSectionController {
         _id: subSectionId,
       });
       if (!subSection) {
-        return res.status(404).json({
-          success: false,
-          message: "Subsection not found",
-        });
+        throw new AppError(errorConstants.RESOURCE_NOT_FOUND, {
+          message: "SubSection not found",
+        })
       }
       const updatedSection = await Section.findById(sectionId).populate(
         "subSection"
@@ -143,11 +133,7 @@ export default class SubSectionController {
         message: "Subsection deleted successfully",
       });
     } catch (err) {
-      console.log(`Error inside subsection delete :${err}`);
-      return res.status(400).json({
-        success: false,
-        message: "Error while deleting Subsection : Internal Servre error.",
-      });
+      ErrorResponse(req, res, err);
     }
   };
 }
