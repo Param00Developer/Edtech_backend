@@ -1,6 +1,8 @@
+import errorConstants from "../constants/error.constants.js";
 import Course from "../models/courseModel.js";
 import Section from "../models/section.js";
 import SubSection from "../models/subSection.js";
+import AppError from "../utils/appError.utils.js";
 import { SuccessResponse } from "../utils/response.utils.js";
 
 export default class SectionController {
@@ -24,10 +26,9 @@ export default class SectionController {
     try {
       const { sectionName, courseId } = req.body;
       if (!sectionName || !courseId) {
-        return res.status(400).json({
-          success: false,
+        throw new AppError(errorConstants.BAD_REQUEST,{
           message: "Please fill all the fields",
-        });
+        })
       }
       const newSection = await this.repoSection.create({
         sectionName,
@@ -54,12 +55,7 @@ export default class SectionController {
         updatedCourse,
       })
     } catch (err) {
-      console.log(`Error inside section Creation :${err}`);
-      return res.status(400).json({
-        success: false,
-        message: "Unable to create section",
-        error: err.message,
-      });
+      ErrorResponse(req,res,err)
     }
   };
 
@@ -75,10 +71,9 @@ export default class SectionController {
       const { sectionName, sectionId, courseId } = req.body;
       //vlidationg data
       if (!sectionName || !sectionId) {
-        return res.status(400).json({
-          success: false,
+        throw new AppError(errorConstants.BAD_REQUEST,{
           message: "Please fill all the fields",
-        });
+        })
       }
 
       //updating section data
@@ -102,12 +97,7 @@ export default class SectionController {
         data: course,
       })
     } catch (err) {
-      console.log(`Error inside section update :${err}`);
-      return res.status(500).json({
-        success: false,
-        message: "Unable to update section",
-        error: err.message,
-      });
+      ErrorResponse(req,res,err)
     }
   };
 
@@ -129,10 +119,9 @@ export default class SectionController {
 
       const section = await this.repoSection.findById(sectionId);
       if (!section) {
-        return res.status(404).json({
-          success: false,
-          message: "Section not Found",
-        });
+        throw new AppError(errorConstants.RESOURCE_NOT_FOUND, {
+          message: "Section not found",
+        })
       }
       //delete sub section
       await this.repoSubSection.deleteMany({
@@ -155,12 +144,7 @@ export default class SectionController {
         message: "Section deleted successfully.",
       })
     } catch (err) {
-      console.log(`Error inside section delete :${err}`);
-      return res.status(500).json({
-        success: false,
-        message: "Unable to delete section",
-        error: err.message,
-      });
+      ErrorResponse(req,res,err)
     }
   };
 }

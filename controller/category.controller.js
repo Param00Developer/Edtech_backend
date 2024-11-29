@@ -1,6 +1,8 @@
+import errorConstants from "../constants/error.constants.js";
 import Category from "../models/category.js";
 import Course from "../models/courseModel.js";
-import { SuccessResponse } from "../utils/response.utils.js";
+import AppError from "../utils/appError.utils.js";
+import { SuccessResponse , ErrorResponse} from "../utils/response.utils.js";
 
 export default class CategoryController {
   constructor() {
@@ -23,10 +25,9 @@ export default class CategoryController {
     try {
       const { name, description } = req.body;
       if (!name || !description) {
-        res.status(400).json({
-          success: false,
+        throw new AppError(errorConstants.BAD_REQUEST,{
           message: `Missing required field :${!name ? "name" : "description"}`,
-        });
+        })
       }
       const CategorysDetails = await this.repoCategory.create({
         name: name,
@@ -36,10 +37,7 @@ export default class CategoryController {
         message: CategorysDetails,
       });
     } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: `Error in category :${err}`,
-      });
+      ErrorResponse(req,res,err)
     }
   };
 
@@ -57,10 +55,7 @@ export default class CategoryController {
         data: categories,
       });
     } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: `Error in while fetching category :${err}`,
-      });
+      ErrorResponse(req,res,err)
     }
   };
 
@@ -81,10 +76,9 @@ export default class CategoryController {
         .exec();
 
       if (!courses) {
-        return res.status(404).json({
-          success: false,
+        throw new AppError(errorConstants.RESOURCE_NOT_FOUND,{
           message: "Course not found .",
-        });
+        })
       }
       //getting different suggestion for courses
       const differentSuggestion = await this.repoCategory
@@ -104,10 +98,7 @@ export default class CategoryController {
         },
       });
     } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: `Error in while fetching category details :${err}`,
-      });
+      ErrorResponse(req,res,err)
     }
   };
 }

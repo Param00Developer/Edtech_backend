@@ -5,7 +5,9 @@ import Section from "../models/section.js";
 import SubSection from "../models/subSection.js";
 import CourseProgress from "../models/courseProgress.js";
 import { uploadImage } from "../utils/imageUploader.js";
-import { SuccessResponse } from "../utils/response.utils.js";
+import { ErrorResponse, SuccessResponse } from "../utils/response.utils.js";
+import AppError from "../utils/appError.utils.js";
+import errorConstants from "../constants/error.constants.js";
 
 export default class CourseController {
   constructor() {
@@ -58,8 +60,7 @@ export default class CourseController {
         !category ||
         !instructions.length
       ) {
-        return res.status(400).json({
-          success: false,
+        throw new AppError(errorConstants.BAD_REQUEST, {
           message: "All fields must be provided.",
         });
       }
@@ -73,8 +74,7 @@ export default class CourseController {
       });
 
       if (!instructorDetails) {
-        return res.status(404).json({
-          success: false,
+        throw new AppError(errorConstants.RESOURCE_NOT_FOUND, {
           message: "Instructor Details Not Found",
         });
       }
@@ -114,16 +114,12 @@ export default class CourseController {
       );
 
       //return response
-      return SuccessResponse(req,res,{
+      return SuccessResponse(req, res, {
         message: "Course created successfully",
         data: newCourse,
-      })
-    } catch (err) {
-      console.log("Error creating User : ", err);
-      res.status(500).json({
-        success: false,
-        message: "Internal Server Error while creating course ",
       });
+    } catch (err) {
+      ErrorResponse(req, res, err);
     }
   };
 
@@ -155,16 +151,12 @@ export default class CourseController {
           },
         })
         .exec();
-      SuccessResponse(req,res,{
+      SuccessResponse(req, res, {
         message: "User details fetched successfully",
         data: courseDetails,
-      })
-    } catch (err) {
-      console.log("Error fetching  course : ", err);
-      return res.status(500).json({
-        success: false,
-        message: "Internal Server Error while fetching all courses",
       });
+    } catch (err) {
+      ErrorResponse(req, res, err);
     }
   };
 
@@ -191,16 +183,11 @@ export default class CourseController {
         )
         .populate("instructor")
         .exec();
-      SuccessResponse(req,res,{
+      SuccessResponse(req, res, {
         data: allCourses,
-      })
-    } catch (error) {
-      console.log(error);
-      return res.status(404).json({
-        success: false,
-        message: `Can't Fetch Course Data`,
-        error: error.message,
       });
+    } catch (error) {
+      ErrorResponse(req, res, error);
     }
   };
 
@@ -243,8 +230,7 @@ export default class CourseController {
       console.log("courseProgressCount : ", courseProgressCount);
 
       if (!courseDetails) {
-        return res.status(400).json({
-          success: false,
+        throw new AppError(errorConstants.BAD_REQUEST, {
           message: `Could not find course with id: ${courseId}`,
         });
       }
@@ -261,7 +247,7 @@ export default class CourseController {
         totalDurationInSeconds
       );
 
-      SuccessResponse(req,res,{
+      SuccessResponse(req, res, {
         data: {
           courseDetails,
           totalDuration,
@@ -269,12 +255,9 @@ export default class CourseController {
             ? courseProgressCount?.completedVideos
             : [],
         },
-      })
-    } catch (error) {
-      return res.status(500).json({
-        success: false,
-        message: error.message,
       });
+    } catch (error) {
+      ErrorResponse(req, res, error);
     }
   };
 
@@ -293,7 +276,9 @@ export default class CourseController {
       const course = await this.repoCourse.findById(courseId);
 
       if (!course) {
-        return res.status(404).json({ error: "Course not found" });
+        throw new AppError(errorConstants.RESOURCE_NOT_FOUND, {
+          message: `Course with id: ${courseId} not found`,
+        });
       }
 
       // If Thumbnail Image is found, update it
@@ -340,17 +325,12 @@ export default class CourseController {
         })
         .exec();
 
-      SuccessResponse(req,res,{
+      SuccessResponse(req, res, {
         message: "Course updated successfully",
         data: updatedCourse,
-      })
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({
-        success: false,
-        message: "Internal server error",
-        error: error.message,
       });
+    } catch (error) {
+      ErrorResponse(req, res, error);
     }
   };
 
@@ -375,17 +355,12 @@ export default class CourseController {
         .sort({ createdAt: -1 });
 
       // Return the instructor's courses
-      SuccessResponse(req,res,{
+      SuccessResponse(req, res, {
         message: "Courses retrieved successfully",
         data: instructorCourses,
-      })
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to retrieve instructor courses",
-        error: error.message,
       });
+    } catch (error) {
+      ErrorResponse(req, res, error);
     }
   };
 
@@ -404,7 +379,9 @@ export default class CourseController {
       // Find the course
       const course = await this.repoCourse.findById(courseId);
       if (!course) {
-        return res.status(404).json({ message: "Course not found" });
+        throw new AppError(errorConstants.RESOURCE_NOT_FOUND, {
+          message: "Course not found",
+        });
       }
 
       // Unenroll students from the course
@@ -434,16 +411,11 @@ export default class CourseController {
       // Delete the course
       await this.repoCourse.findByIdAndDelete(courseId);
 
-      SuccessResponse(req,res,{
+      SuccessResponse(req, res, {
         message: "Course deleted successfully",
-      })
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({
-        success: false,
-        message: "Server error",
-        error: error.message,
       });
+    } catch (error) {
+      ErrorResponse(req, res, error);
     }
   };
 

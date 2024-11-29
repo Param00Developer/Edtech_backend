@@ -5,8 +5,10 @@ import instance from "../config/razorpay.js";
 import courseEnrollmentEmail from "../mailTemplates/courseEnrollmentEmail.js";
 import paymentSuccessEmail from "../mailTemplates/paymentSuccessEmail.js";
 import sendMail from "../utils/sendMail.js";
-import { SuccessResponse } from "../utils/response.utils.js";
+import { ErrorResponse, SuccessResponse } from "../utils/response.utils.js";
 import crypto from "crypto";
+import AppError from "../utils/appError.utils.js";
+import errorConstants from "../constants/error.constants.js";
 
 export default class PaymentController {
   constructor() {
@@ -31,8 +33,7 @@ export default class PaymentController {
       const userId = req.user.id;
 
       if (courses.length === 0) {
-        return res.json({
-          success: false,
+        throw new AppError(errorConstants.BAD_REQUEST, {
           message: "Please provide Course Id",
         });
       }
@@ -43,16 +44,16 @@ export default class PaymentController {
         let course;
         course = await this.repoCourse.findById(course_id);
         if (!course) {
-          return res
-            .status(200)
-            .json({ success: false, message: "Could not find the course" });
+          throw new AppError(errorConstants.RESOURCE_NOT_FOUND, {
+            message: "Course not found",
+          });
         }
 
         const uid = new mongoose.Types.ObjectId(userId);
         if (course.studentsEnrolled.includes(uid)) {
-          return res
-            .status(200)
-            .json({ success: false, message: "Student is already Enrolled" });
+          return SuccessResponse(req, res, {
+            message: "Course already enrolled",
+          });
         }
         totalAmount += course.price;
       }
@@ -67,10 +68,7 @@ export default class PaymentController {
         message: paymentResponse,
       });
     } catch (err) {
-      return res.status(500).json({
-        success: false,
-        message: "Internal Server Error",
-      });
+      ErrorResponse(req, res, err);
     }
   };
 
@@ -83,41 +81,45 @@ export default class PaymentController {
    */
   //verify the payment
   verifyPayment = async (req, res) => {
-    const razorpay_order_id = req.body?.razorpay_order_id;
-    const razorpay_payment_id = req.body?.razorpay_payment_id;
-    const razorpay_signature = req.body?.razorpay_signature;
-    const courses = req.body?.courses;
-    const userId = req.user.id;
+    try {
+      const razorpay_order_id = req.body?.razorpay_order_id;
+      const razorpay_payment_id = req.body?.razorpay_payment_id;
+      const razorpay_signature = req.body?.razorpay_signature;
+      const courses = req.body?.courses;
+      const userId = req.user.id;
 
-    if (
-      !razorpay_order_id ||
-      !razorpay_payment_id ||
-      !razorpay_signature ||
-      !courses ||
-      !userId
-    ) {
-      return res
-        .status(500)
-        .json({ success: false, message: "Payment Failed" });
+      if (
+        !razorpay_order_id ||
+        !razorpay_payment_id ||
+        !razorpay_signature ||
+        !courses ||
+        !userId
+      ) {
+        throw new AppError(errorConstants.INTERNAL_SERVER_ERROR, {
+          message: "Payment Failed",
+        });
+      }
+
+      let body = razorpay_order_id + "|" + razorpay_payment_id;
+      const expectedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_SECRET)
+        .update(body.toString())
+        .digest("hex");
+
+      if (expectedSignature === razorpay_signature) {
+        //enroll karwao student ko
+        await this.enrollStudents(courses, userId, res);
+        //return res
+        return SuccessResponse(req, res, {
+          message: "Payment Verified",
+        });
+      }
+      throw new AppError(errorConstants.BAD_REQUEST,{
+        message: "Payment Verification Failed",
+      })
+    } catch (err) {
+      ErrorResponse(req, res, err);
     }
-
-    let body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_SECRET)
-      .update(body.toString())
-      .digest("hex");
-
-    if (expectedSignature === razorpay_signature) {
-      //enroll karwao student ko
-      await enrollStudents(courses, userId, res);
-      //return res
-      return SuccessResponse(req, res, {
-        message: "Payment Verified",
-      });
-    }
-    return res
-      .status(200)
-      .json({ success: "false", message: "Payment Failed" });
   };
 
   /**
@@ -129,10 +131,9 @@ export default class PaymentController {
    */
   enrollStudents = async (courses, userId, res) => {
     if (!courses || !userId) {
-      return res.status(400).json({
-        success: false,
+      throw new AppError(errorConstants.BAD_REQUEST,{
         message: "Please Provide data for Courses or UserId",
-      });
+      })
     }
 
     for (const courseId of courses) {
@@ -145,9 +146,9 @@ export default class PaymentController {
         );
 
         if (!enrolledCourse) {
-          return res
-            .status(500)
-            .json({ success: false, message: "Course not Found" });
+          throw new AppError(errorConstants.BAD_REQUEST,{
+            message: "Course Not Found",
+          })
         }
 
         //find the student and add the course to their list of enrolledCOurses
@@ -171,8 +172,7 @@ export default class PaymentController {
           )
         );
       } catch (error) {
-        console.log(error);
-        return res.status(500).json({ success: false, message: error.message });
+        throw new AppError(errorConstants.INTERNAL_SERVER_ERROR,{error})
       }
     }
   };
@@ -189,9 +189,9 @@ export default class PaymentController {
     const userId = req.user.id;
 
     if (!orderId || !paymentId || !amount || !userId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Please provide all the fields" });
+      throw new AppError(errorConstants.BAD_REQUEST, {
+        message: "Please provide all the fields" 
+      })
     }
 
     try {
@@ -208,10 +208,7 @@ export default class PaymentController {
         )
       );
     } catch (error) {
-      console.log("error in sending mail", error);
-      return res
-        .status(500)
-        .json({ success: false, message: "Could not send email" });
+        ErrorResponse(req,res,error)
     }
   };
 }
